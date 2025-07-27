@@ -70,4 +70,15 @@ STREAMING_CONFIG = {
 MEMORY_CONFIG = {
     "max_token_limit": 4000,  # Maximum tokens to keep in conversation memory
     "model_name": "gpt-4o-mini"  # Model to use for token counting
+}
+
+# LangGraph Memory Configuration
+LANGGRAPH_MEMORY_CONFIG = {
+    "db_path": "conversations.db",  # SQLite database path for conversation persistence
+    "enable_conversation_persistence": True,  # Enable conversation persistence across sessions
+    "max_conversations": 50,  # Maximum number of conversations to keep
+    "auto_summarize_old_conversations": True,  # Auto-summarize conversations older than threshold
+    "summarize_threshold_days": 30,  # Days after which conversations are candidates for summarization
+    "enable_conversation_branching": False,  # Enable conversation branching (future feature)
+    "enable_semantic_search": False,  # Enable semantic search on conversation history (future feature)
 } 

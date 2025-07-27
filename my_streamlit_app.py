@@ -1,5 +1,5 @@
 import streamlit as st
-from core.qa_chain import setup_qa_chain_with_memory, clean_response
+from core.langgraph_qa_chain import setup_qa_chain_with_memory, clean_response
 from utils.conversation_manager import (
     initialize_conversations, 
     get_current_messages, 
