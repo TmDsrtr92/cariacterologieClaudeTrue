@@ -16,7 +16,13 @@ from utils.streamlit_helpers import (
     render_welcome_message,
     get_selected_collection
 )
-from core.callbacks import RetrievalCallbackHandler
+from core.transparency_callbacks import TransparentRetrievalCallbackHandler
+from utils.simple_transparency import (
+    show_processing_status,
+    start_transparency,
+    update_processing_status
+)
+from utils.transparency_system import ProcessingStage
 
 # Initialize the app
 st.title("CarIActérologie")
@@ -55,6 +61,15 @@ pending_prompt = get_pending_prompt()
 prompt_input = pending_prompt  # Only use pending prompt if it exists
 
 if prompt_input:
+    # Start transparency tracking
+    start_transparency()
+    
+    # Show processing status container
+    status_container = show_processing_status()
+    
+    # Start with question processing stage
+    update_processing_status(ProcessingStage.QUESTION_PROCESSING)
+    
     # Add user message to conversation
     add_message("user", prompt_input)
     
@@ -69,8 +84,8 @@ if prompt_input:
     # Create streaming handler
     stream_handler = create_stream_handler(stream_placeholder)
     
-    # Create retrieval callback handler with memory
-    retrieval_handler = RetrievalCallbackHandler(memory=current_memory)
+    # Create retrieval callback handler with memory and transparency
+    retrieval_handler = TransparentRetrievalCallbackHandler(memory=current_memory)
 
     # Get response from QA chain with streaming and memory
     result = qa_chain.invoke(

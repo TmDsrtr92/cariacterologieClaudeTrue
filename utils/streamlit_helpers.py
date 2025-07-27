@@ -2,7 +2,7 @@ import streamlit as st
 from langfuse.langchain import CallbackHandler
 from config.settings import STREAMING_CONFIG
 from config.welcome_config import WELCOME_MESSAGE, TEMPLATED_PROMPTS, WELCOME_STYLE, PROMPT_BUTTON_STYLE
-from core.callbacks import StreamlitCallbackHandler
+from core.transparency_callbacks import TransparentStreamlitCallbackHandler
 
 
 def get_langfuse_handler():
@@ -10,8 +10,8 @@ def get_langfuse_handler():
     return CallbackHandler()
 
 def create_stream_handler(placeholder):
-    """Create a streaming callback handler for Streamlit"""
-    return StreamlitCallbackHandler(
+    """Create a streaming callback handler for Streamlit with transparency"""
+    return TransparentStreamlitCallbackHandler(
         placeholder, 
         update_every=STREAMING_CONFIG["update_every"], 
         delay=STREAMING_CONFIG["delay"]

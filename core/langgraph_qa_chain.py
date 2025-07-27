@@ -12,6 +12,11 @@ from typing_extensions import Annotated
 from core.llm_setup import setup_llm, setup_retriever
 from core.langgraph_memory import LangGraphMemoryManager
 from config.prompts import get_qa_prompt
+from utils.simple_transparency import (
+    update_processing_status,
+    complete_processing_status
+)
+from utils.transparency_system import ProcessingStage
 import re
 
 
@@ -89,6 +94,9 @@ class LangGraphRAGChain:
     
     def _retrieve_context(self, state: RAGState) -> Dict[str, Any]:
         """Retrieve relevant documents based on the question"""
+        # Update transparency: starting document retrieval
+        update_processing_status(ProcessingStage.DOCUMENT_RETRIEVAL)
+        
         print(f"\n🔍 RECHERCHE DE CHUNKS pour la question: '{state.question}'")
         print("=" * 80)
         
@@ -113,6 +121,9 @@ class LangGraphRAGChain:
     
     def _contextualize_question(self, state: RAGState) -> Dict[str, Any]:
         """Contextualize the question using chat history if needed"""
+        # Update transparency: starting context generation
+        update_processing_status(ProcessingStage.CONTEXT_GENERATION)
+        
         # If no chat history, return question as-is
         if not state.chat_history:
             return {"question": state.question}
@@ -145,6 +156,9 @@ Question contextualisée:"""
     
     def _generate_answer(self, state: RAGState) -> Dict[str, Any]:
         """Generate answer using retrieved context and chat history"""
+        # Update transparency: starting response generation
+        update_processing_status(ProcessingStage.RESPONSE_GENERATION)
+        
         # Display memory content
         if state.chat_history:
             print(f"\n💬 MÉMOIRE DE CONVERSATION ({len(state.chat_history)} messages):")
@@ -277,10 +291,14 @@ IMPORTANT - Utilise les informations suivantes dans cet ordre de priorité :
                 pass
         
         # Save context to memory
+        update_processing_status(ProcessingStage.MEMORY_SAVING)
         self.memory_manager.save_context(
             {"question": question},
             {"answer": answer}
         )
+        
+        # Complete transparency tracking
+        complete_processing_status()
         
         return {"answer": answer}
 
