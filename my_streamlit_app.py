@@ -4,13 +4,16 @@ from utils.conversation_manager import (
     initialize_conversations, 
     get_current_messages, 
     add_message,
-    get_current_memory
+    get_current_memory,
+    should_show_welcome_message,
+    get_pending_prompt
 )
 from utils.streamlit_helpers import (
     get_langfuse_handler, 
     create_stream_handler, 
     render_conversation_sidebar, 
     render_chat_messages,
+    render_welcome_message,
     get_selected_collection
 )
 from core.callbacks import RetrievalCallbackHandler
@@ -37,11 +40,21 @@ selected_collection = get_selected_collection()
 # Set up QA chain with memory and selected collection
 qa_chain = setup_qa_chain_with_memory(current_memory, collection_key=selected_collection)
 
-# Render existing chat messages
-render_chat_messages(messages)
+# Show welcome message if this is a new conversation
+if should_show_welcome_message():
+    render_welcome_message()
 
-# Handle new user input
-if prompt_input := st.chat_input("Comment puis-je t'aider aujourd'hui ?"):
+# Always render existing chat messages (if any)
+if messages:
+    render_chat_messages(messages)
+
+# Check for pending prompt from welcome buttons
+pending_prompt = get_pending_prompt()
+
+# Determine which input to process
+prompt_input = pending_prompt  # Only use pending prompt if it exists
+
+if prompt_input:
     # Add user message to conversation
     add_message("user", prompt_input)
     
@@ -76,3 +89,11 @@ if prompt_input := st.chat_input("Comment puis-je t'aider aujourd'hui ?"):
 
     # Add assistant message to conversation
     add_message("assistant", cleaned_answer)
+
+# Always show chat input at the end (this ensures it persists after templated prompts)
+manual_prompt = st.chat_input("Comment puis-je t'aider aujourd'hui ?")
+if manual_prompt:
+    # Process manual input by setting it as pending and rerunning
+    from utils.conversation_manager import set_pending_prompt
+    set_pending_prompt(manual_prompt)
+    st.rerun()

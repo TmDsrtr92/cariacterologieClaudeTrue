@@ -18,6 +18,12 @@ def initialize_conversations():
         manager = st.session_state.langgraph_manager
         thread_id = manager.create_conversation("Conversation 1")
         st.session_state.conversation_threads = {"conversation 1": thread_id}
+    if "conversation_welcome_shown" not in st.session_state:
+        # Track which conversations have shown welcome message
+        st.session_state.conversation_welcome_shown = {"conversation 1": False}
+    if "pending_prompt" not in st.session_state:
+        # Store prompt from welcome buttons to process
+        st.session_state.pending_prompt = None
 
 def get_conversation_names():
     """Get list of conversation names"""
@@ -78,6 +84,9 @@ def create_new_conversation():
     manager = st.session_state.langgraph_manager
     thread_id = manager.create_conversation(f"Conversation {len(conversation_names) + 1}")
     st.session_state.conversation_threads[new_name] = thread_id
+    
+    # Initialize welcome state for new conversation
+    st.session_state.conversation_welcome_shown[new_name] = False
     
     # Set as current conversation
     st.session_state.current_conversation = new_name
@@ -152,4 +161,48 @@ def delete_conversation(conversation_name):
     # Switch to first conversation if current was deleted
     if st.session_state.current_conversation == conversation_name:
         first_conv = list(st.session_state.conversations.keys())[0]
-        set_current_conversation(first_conv) 
+        set_current_conversation(first_conv)
+
+
+def should_show_welcome_message(conversation_name=None):
+    """Check if welcome message should be shown for a conversation"""
+    if conversation_name is None:
+        conversation_name = get_current_conversation()
+    
+    # Show welcome if conversation is empty and welcome hasn't been shown yet
+    messages = st.session_state.conversations.get(conversation_name, [])
+    welcome_shown = st.session_state.conversation_welcome_shown.get(conversation_name, False)
+    
+    return len(messages) == 0 and not welcome_shown
+
+
+def mark_welcome_shown(conversation_name=None):
+    """Mark welcome message as shown for a conversation"""
+    if conversation_name is None:
+        conversation_name = get_current_conversation()
+    
+    st.session_state.conversation_welcome_shown[conversation_name] = True
+
+
+def set_pending_prompt(prompt_text):
+    """Set a prompt to be processed as if user typed it"""
+    st.session_state.pending_prompt = prompt_text
+
+
+def get_pending_prompt():
+    """Get and clear any pending prompt"""
+    prompt = st.session_state.pending_prompt
+    st.session_state.pending_prompt = None
+    return prompt
+
+
+def process_templated_prompt(prompt_text):
+    """Process a templated prompt as if user submitted it"""
+    # Mark welcome as shown for current conversation
+    mark_welcome_shown()
+    
+    # Set the prompt to be processed
+    set_pending_prompt(prompt_text)
+    
+    # Trigger processing
+    st.rerun() 

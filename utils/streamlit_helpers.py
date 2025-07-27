@@ -1,6 +1,7 @@
 import streamlit as st
 from langfuse.langchain import CallbackHandler
 from config.settings import STREAMING_CONFIG
+from config.welcome_config import WELCOME_MESSAGE, TEMPLATED_PROMPTS, WELCOME_STYLE, PROMPT_BUTTON_STYLE
 from core.callbacks import StreamlitCallbackHandler
 
 
@@ -126,6 +127,48 @@ def get_selected_collection():
         st.session_state.selected_collection = DEFAULT_COLLECTION_KEY
     
     return st.session_state.selected_collection
+
+def render_welcome_message():
+    """
+    Render welcome message with templated prompt buttons
+    Handles button clicks by processing the selected prompt
+    """
+    from utils.conversation_manager import process_templated_prompt
+    
+    # Create welcome container with custom styling
+    with st.container():
+        # Welcome message
+        st.markdown(f"""
+        <div style="
+            background-color: {WELCOME_STYLE['background_color']};
+            border: 1px solid {WELCOME_STYLE['border_color']};
+            border-radius: {WELCOME_STYLE['border_radius']};
+            padding: {WELCOME_STYLE['padding']};
+            margin-bottom: {WELCOME_STYLE['margin_bottom']};
+        ">
+            {WELCOME_MESSAGE}
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Prompt buttons
+        st.markdown("**💡 Suggestions pour commencer :**")
+        
+        # Create columns for buttons
+        cols = st.columns(len(TEMPLATED_PROMPTS))
+        
+        for i, prompt_config in enumerate(TEMPLATED_PROMPTS):
+            with cols[i]:
+                # Create button with custom styling
+                button_label = f"{prompt_config['icon']} {prompt_config['title']}"
+                
+                if st.button(
+                    button_label,
+                    key=f"prompt_button_{prompt_config['id']}",
+                    help=prompt_config['description'],
+                    use_container_width=True
+                ):
+                    # Process the selected prompt
+                    process_templated_prompt(prompt_config['prompt'])
 
 def render_chat_messages(messages):
     """Render chat messages in the main area"""
