@@ -232,14 +232,20 @@ Python dependencies:
    pip install -r requirements.txt
    ```
 
-3. **Set up API keys**
-   Create `.streamlit/secrets.toml` with your API keys:
+3. **Set up API keys** 🔐
+   Copy the example secrets file and add your API keys:
+   ```bash
+   cp .streamlit/secrets.toml.example .streamlit/secrets.toml
+   ```
+   
+   Then edit `.streamlit/secrets.toml` with your actual API keys:
    ```toml
    OPENAI_API_KEY = "your-openai-api-key"
-   LANGFUSE_SECRET_KEY = "your-langfuse-secret-key"
-   LANGFUSE_PUBLIC_KEY = "your-langfuse-public-key"
-   LANGFUSE_HOST = "https://cloud.langfuse.com"
+   LANGFUSE_SECRET_KEY = "your-langfuse-secret-key"  # Optional
+   LANGFUSE_PUBLIC_KEY = "your-langfuse-public-key"  # Optional
    ```
+   
+   **⚠️ Security Note**: Never commit `secrets.toml` to version control. It's already excluded in `.gitignore`.
 
 4. **Index the documents**
    ```bash
