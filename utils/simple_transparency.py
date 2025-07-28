@@ -23,12 +23,16 @@ def show_processing_status():
         # Create progress bar
         progress_bar = st.progress(0)
         
-        # Create container for cumulative steps
+        # Create container for cumulative steps text
         steps_text = st.empty()
+        
+        # Create container for interactive elements (buttons)
+        interactive_container = st.container()
         
         # Store these in session state for updates
         st.session_state.transparency_progress = progress_bar
         st.session_state.transparency_steps = steps_text
+        st.session_state.transparency_interactive = interactive_container
         st.session_state.transparency_container = status_container
         
     return status_container
@@ -82,6 +86,7 @@ def update_processing_status(stage: ProcessingStage):
             
             # Show completed stages
             completed_stages = st.session_state.get('completed_stages', [])
+            
             for completed_stage in completed_stages:
                 if completed_stage in STAGE_CONFIGS:
                     completed_info = STAGE_CONFIGS[completed_stage]
@@ -94,6 +99,7 @@ def update_processing_status(stage: ProcessingStage):
             
             # Update the display
             st.session_state.transparency_steps.markdown(steps_text)
+            
         except:
             pass
 
@@ -102,28 +108,23 @@ def complete_processing_status():
     if not st.session_state.get('show_transparency', False):
         return
     
-    # Update to completed
+    # Mark current stage as completed
+    current_stage = st.session_state.get('current_stage')
+    if current_stage and current_stage not in st.session_state.get('completed_stages', []):
+        if 'completed_stages' not in st.session_state:
+            st.session_state.completed_stages = []
+        st.session_state.completed_stages.append(current_stage)
+    
+    # Set to completed stage
+    st.session_state.current_stage = ProcessingStage.COMPLETED
+    
+    # Keep transparency active so it remains visible
+    # st.session_state.show_transparency = True  # Keep it active
+    
+    # Update progress to 100%
     if 'transparency_progress' in st.session_state:
         try:
             st.session_state.transparency_progress.progress(1.0)
-        except:
-            pass
-    
-    if 'transparency_status' in st.session_state:
-        try:
-            st.session_state.transparency_status.markdown(
-                "**✅ Terminé**\n\nRéponse prête !"
-            )
-        except:
-            pass
-    
-    if 'transparency_container' in st.session_state:
-        try:
-            # Update container to completed state
-            st.session_state.transparency_container.update(
-                label="✅ Réponse générée avec succès !",
-                state="complete"
-            )
         except:
             pass
 
@@ -134,3 +135,5 @@ def start_transparency():
 def stop_transparency():
     """Stop transparency tracking"""
     st.session_state.show_transparency = False
+
+

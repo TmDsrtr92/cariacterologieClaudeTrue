@@ -103,6 +103,7 @@ class LangGraphRAGChain:
         # Use the original question for retrieval (before contextualization)
         docs = self.retriever.invoke(state.question)
         
+        
         print(f"📄 {len(docs)} chunks récupérés:")
         print("-" * 80)
         for i, doc in enumerate(docs, 1):

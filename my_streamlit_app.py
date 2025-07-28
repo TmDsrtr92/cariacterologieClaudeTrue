@@ -30,6 +30,18 @@ st.title("CarIActérologie")
 # Initialize conversations
 initialize_conversations()
 
+# Handle chunks page display - if flag is set, show chunks page instead of normal chat
+if st.session_state.get('show_chunks_page', False):
+    from utils.simple_transparency import show_chunks_page
+    show_chunks_page()
+    # Stop here - don't show the normal chat interface
+    st.stop()
+
+# Show transparency status even after processing is complete
+from utils.simple_transparency import show_processing_status
+if st.session_state.get('show_transparency', False):
+    show_processing_status()
+
 # Set up Langfuse handler
 langfuse_handler = get_langfuse_handler()
 
