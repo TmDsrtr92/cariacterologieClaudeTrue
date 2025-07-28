@@ -16,25 +16,33 @@ def show_processing_status():
     if 'completed_stages' not in st.session_state:
         st.session_state.completed_stages = []
     
-    # Create status container
-    status_container = st.status("🤖 Génération de la réponse en cours...", expanded=True)
+    # Clear previous transparency placeholder if it exists
+    if 'transparency_placeholder' in st.session_state:
+        st.session_state.transparency_placeholder.empty()
     
-    with status_container:
-        # Create progress bar
-        progress_bar = st.progress(0)
+    # Create a placeholder for the transparency container
+    st.session_state.transparency_placeholder = st.empty()
+    
+    # Create status container inside the placeholder
+    with st.session_state.transparency_placeholder.container():
+        status_container = st.status("🤖 Génération de la réponse en cours...", expanded=True)
         
-        # Create container for cumulative steps text
-        steps_text = st.empty()
-        
-        # Create container for interactive elements (buttons)
-        interactive_container = st.container()
-        
-        # Store these in session state for updates
-        st.session_state.transparency_progress = progress_bar
-        st.session_state.transparency_steps = steps_text
-        st.session_state.transparency_interactive = interactive_container
-        st.session_state.transparency_container = status_container
-        
+        with status_container:
+            # Create progress bar
+            progress_bar = st.progress(0)
+            
+            # Create container for cumulative steps text
+            steps_text = st.empty()
+            
+            # Create container for interactive elements (buttons)
+            interactive_container = st.container()
+            
+            # Store these in session state for updates
+            st.session_state.transparency_progress = progress_bar
+            st.session_state.transparency_steps = steps_text
+            st.session_state.transparency_interactive = interactive_container
+            st.session_state.transparency_container = status_container
+    
     return status_container
 
 def update_processing_status(stage: ProcessingStage):
@@ -129,8 +137,21 @@ def complete_processing_status():
             pass
 
 def start_transparency():
-    """Start transparency tracking"""
+    """Start transparency tracking and reset state for new question"""
     st.session_state.show_transparency = True
+    # Generate a unique ID for this transparency session
+    import time
+    st.session_state.transparency_session_id = str(int(time.time() * 1000))
+    
+    # Reset transparency state for new question
+    st.session_state.completed_stages = []
+    if 'current_stage' in st.session_state:
+        del st.session_state.current_stage
+    
+    # Clear previous transparency UI components to remove empty boxes
+    for key in ['transparency_progress', 'transparency_steps', 'transparency_interactive', 'transparency_container']:
+        if key in st.session_state:
+            del st.session_state[key]
 
 def stop_transparency():
     """Stop transparency tracking"""
