@@ -1,0 +1,15 @@
+# FastAPI and WebSocket dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+websockets==12.0
+python-multipart==0.0.6
+
+# Already have these from existing project:
+# streamlit
+# langchain
+# langchain-community  
+# langchain-openai
+# chromadb
+# sqlite3 (built-in)
+# pandas
+# numpy
